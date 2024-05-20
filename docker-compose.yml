@@ -1,26 +1,41 @@
 services:
   web:
     build: .
-    ports:
-      - "5000:80"
     volumes:
       - .:/app
-    environment:
-      - FLASK_ENV=development
     depends_on:
       - db
     env_file:
-      - .env
+      - ${environment}.env
+    ports:
+      - "${LISTEN_PORT}:${SERVICE_PORT}"
+  task_runner:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - cache
+    env_file:
+      - ${environment}.env
+    command: /bin/sh -c "rq worker -u $$WORKER_REDIS_URL emails"
   db:
     image: "postgres:alpine"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=pg_password
       - POSTGRES_DB=myapp
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  cache:
+    image: "redis:alpine"
+    restart: always
+    command: /bin/sh -c "redis-server --bind 0.0.0.0"
+    env_file:
+      - ${environment}.env
+    ports:
+      - "6379:6379"
 volumes:
   postgres_data:
 

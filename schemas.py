@@ -60,3 +60,7 @@ class UserSchema(Schema):
     username = fields.Str(required=True)
     # Load only means that the field is only used when loading data, never returned in a dump
     password = fields.Str(required=True, load_only=True)
+
+
+class UserRegisterSchema(UserSchema):
+    email = fields.Str(required=True)

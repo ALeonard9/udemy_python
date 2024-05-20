@@ -1,4 +1,6 @@
 import os
+import redis
+from rq import Queue
 
 from flask import Flask, jsonify
 from flask_smorest import Api
@@ -7,7 +9,6 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 
 from db import db
-import models
 
 from blocklist import BLOCKLIST
 
@@ -17,11 +18,20 @@ from resources.tag import blp as TagBlueprint
 from resources.user import blp as UserBlueprint
 from resources.test import blp as TestBlueprint
 
+# TODO Celery better than RQ
+
 
 def create_app(db_url=None):
     app = Flask(__name__)
-    load_dotenv()
+    APP_ROOT = os.path.join(os.path.dirname(__file__))
+    FLASK_ENV = os.getenv("FLASK_ENV") or "development"
 
+    ENVIRONMENTS = {"development": ".env", "qa": "qa.env.", "production": "prod.env"}
+    dotenv_path = os.path.join(APP_ROOT, ENVIRONMENTS.get(FLASK_ENV) or ".env")
+    load_dotenv(dotenv_path)
+
+    redis_connection = redis.from_url(os.getenv("REDIS_URL"))
+    app.queue = Queue("emails", connection=redis_connection)
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Store REST API"
     app.config["API_VERSION"] = "v1"
@@ -95,9 +105,6 @@ def create_app(db_url=None):
             ),
             401,
         )
-
-    # with app.app_context():
-    #     db.create_all()
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)

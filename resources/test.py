@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 import requests
 
+import os
 import redis
 from rq import Queue
 
@@ -17,12 +18,10 @@ def count_words_at_url(url):
 class UserList(MethodView):
     @blp.response(200)
     def post(self):
-        # print(os.getenv("REDIS_URL"))
         connection = redis.from_url(
-            # os.getenv(
-            #     "REDIS_URL",
-            # ),
-            "rediss://red-cp3r03vsc6pc73fues7g:jHgYj5sghE1imROjxodFCzV0VZ7SfS0z@ohio-redis.render.com:6379",
+            os.getenv(
+                "REDIS_URL",
+            ),
             ssl_cert_reqs=None,  # This disables certificate verification
             ssl_ca_certs=None,
         )  # Get this from Render.com or run in Docker

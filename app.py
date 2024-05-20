@@ -26,7 +26,11 @@ def create_app(db_url=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__))
     FLASK_ENV = os.getenv("FLASK_ENV") or "development"
 
-    ENVIRONMENTS = {"development": ".env", "qa": "qa.env.", "production": "prod.env"}
+    ENVIRONMENTS = {
+        "development": "dev.env",
+        "qa": "qa.env.",
+        "production": "production.env",
+    }
     dotenv_path = os.path.join(APP_ROOT, ENVIRONMENTS.get(FLASK_ENV) or ".env")
     load_dotenv(dotenv_path)
 
